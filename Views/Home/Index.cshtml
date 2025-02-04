@@ -1,0 +1,197 @@
+﻿@model IEnumerable<BootS.Models.Product>
+
+@{
+    ViewData["Title"] = "Главная";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container mt-4">
+    @if (ViewBag.SearchTerm != null)
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-2">Результаты поиска: "@ViewBag.SearchTerm"</h2>
+                <p class="text-muted mb-0">Найдено товаров: @Model.Count()</p>
+            </div>
+            <a href="/" class="btn btn-outline-primary">
+                <i class="bi bi-grid"></i> Вернуться в каталог
+            </a>
+        </div>
+    }
+    else
+    {
+        <h1 class="text-center mb-4">Добро пожаловать в BootS</h1>
+        <p class="text-center mb-5">Ваш магазин качественной обуви</p>
+        <h2>Каталог товаров</h2>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            @if (ViewBag.SearchTerm != null)
+            {
+                <text>По вашему запросу ничего не найдено</text>
+            }
+            else
+            {
+                <text>В каталоге пока нет товаров</text>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var product in Model)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name">
+                        <div class="card-body">
+                            <h5 class="card-title">@product.Name</h5>
+                            <p class="card-text">@product.Description</p>
+                            <p class="card-text"><strong>Цена: @product.Price.ToString("C")</strong></p>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-primary" onclick="addToCart(@product.Id)">В корзину</button>
+                                <button class="btn btn-outline-primary" data-product-id="@product.Id">
+                                    <i class="bi bi-heart-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wishlistButtons = document.querySelectorAll('.btn-outline-primary');
+            wishlistButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const productId = this.getAttribute('data-product-id');
+                    addToWishlist(productId, this);
+                });
+
+                // Проверяем статус товара в списке желаемого
+                const productId = button.getAttribute('data-product-id');
+                fetch(`/Wishlist/IsInWishlist?productId=${productId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.isInWishlist) {
+                            button.classList.add('in-wishlist');
+                        }
+                    })
+                    .catch(error => console.error('Error checking wishlist status:', error));
+            });
+        });
+
+        function showNotification(title, icon = 'success') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: icon,
+                title: title
+            });
+        }
+
+        function addToWishlist(productId, button) {
+            if (!button) {
+                console.error('Button not found');
+                return;
+            }
+
+            const isInWishlist = button.classList.contains('in-wishlist');
+
+            if (isInWishlist) {
+                // Удаляем из списка желаемого
+                fetch('/Wishlist/RemoveFromWishlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(parseInt(productId))
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        button.classList.remove('in-wishlist');
+                        showNotification('Товар удален из избранного');
+                    } else {
+                        throw new Error(data.message || 'Произошла ошибка');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Не удалось удалить товар из избранного', 'error');
+                });
+            } else {
+                // Добавляем в список желаемого
+                fetch('/Wishlist/AddToWishlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(parseInt(productId))
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        button.classList.add('in-wishlist');
+                        showNotification('Товар добавлен в избранное');
+                    } else {
+                        throw new Error(data.message || 'Произошла ошибка');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Не удалось добавить товар в избранное', 'error');
+                });
+            }
+        }
+
+        function addToCart(productId) {
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ productId: productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Товар добавлен в корзину');
+                    updateCartCount();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Не удалось добавить товар в корзину', 'error');
+            });
+        }
+    </script>
+}

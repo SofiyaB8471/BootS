@@ -1,0 +1,284 @@
+@model IEnumerable<BootS.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Оформление заказа";
+    var totalAmount = ViewBag.TotalAmount;
+    var userBalance = ViewBag.UserBalance;
+}
+
+<div class="container mt-4">
+    <h2>Оформление заказа</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Товары в заказе</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%">Товар</th>
+                                    <th>Цена</th>
+                                    <th>Количество</th>
+                                    <th>Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" 
+                                                     style="width: 50px; height: 50px; object-fit: contain; margin-right: 15px;">
+                                                <span>@item.Product.Name</span>
+                                            </div>
+                                        </td>
+                                        <td>@item.Product.Price.ToString("C")</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@((item.Product.Price * item.Quantity).ToString("C"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Данные доставки</h5>
+                    <div class="mb-3">
+                        <label for="DeliveryAddress" class="form-label">Адрес доставки</label>
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="DeliveryAddress" 
+                                   name="DeliveryAddress" 
+                                   placeholder="Город, улица, дом, квартира"
+                                   minlength="10"
+                                   maxlength="200"
+                                   required>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите корректный адрес доставки
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Пример: г. Москва, ул. Ленина, д. 1, кв. 123
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="PhoneNumber" class="form-label">Номер телефона</label>
+                        <div class="input-group">
+                            <span class="input-group-text">+7</span>
+                            <input type="tel" 
+                                   class="form-control" 
+                                   id="PhoneNumber" 
+                                   name="PhoneNumber" 
+                                   placeholder="(XXX) XXX-XX-XX"
+                                   maxlength="15"
+                                   required>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите корректный номер телефона
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Формат: +7 (XXX) XXX-XX-XX
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Комментарий к заказу</label>
+                        <textarea id="comment" class="form-control" rows="2" 
+                                placeholder="Введите комментарий к заказу (необязательно)"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Информация о заказе</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Сумма заказа</label>
+                        <p class="form-control-static">@totalAmount.ToString("C")</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ваш баланс</label>
+                        <p class="form-control-static">@userBalance.ToString("C")</p>
+                    </div>
+                    @if (userBalance < totalAmount)
+                    {
+                        <div class="alert alert-warning">
+                            Недостаточно средств на балансе. 
+                            <a href="/Balance" class="alert-link">Пополнить баланс</a>
+                        </div>
+                    }
+                    <button class="btn btn-primary w-100" onclick="placeOrder()"
+                            @(userBalance < totalAmount ? "disabled" : "")>
+                        Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="success-modal">
+    <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+    </div>
+    <h3>Заказ оформлен!</h3>
+    <p>Ваш заказ успешно оформлен и принят в обработку</p>
+    <button class="btn btn-primary" onclick="window.location.href='/Order/History'">
+        Перейти к заказам
+    </button>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            if($.fn.mask) {
+                $('#PhoneNumber').mask('(000) 000-00-00', {
+                    placeholder: "(___) ___-__-__"
+                });
+            } else {
+                console.error('jQuery Mask Plugin не загружен');
+            }
+        });
+
+        // Валидация формы
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+
+        // Очистка маски телефона перед отправкой
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var phone = document.getElementById('PhoneNumber');
+            phone.value = phone.value.replace(/\D/g, '');
+        });
+
+        function placeOrder() {
+            const deliveryAddress = document.getElementById('DeliveryAddress').value;
+            const phoneNumber = document.getElementById('PhoneNumber').value;
+            
+            // Валидация
+            let isValid = true;
+            
+            // Проверка адреса: должен содержать буквы и цифры
+            const addressRegex = /^[а-яА-Я].*\d+.*$/;
+            if (!deliveryAddress || deliveryAddress.length < 10 || !addressRegex.test(deliveryAddress)) {
+                document.getElementById('DeliveryAddress').classList.add('is-invalid');
+                isValid = false;
+            } else {
+                document.getElementById('DeliveryAddress').classList.remove('is-invalid');
+            }
+            
+            // Проверка телефона: ровно 10 цифр после очистки от маски
+            const cleanPhone = phoneNumber.replace(/\D/g, '');
+            if (!phoneNumber || cleanPhone.length !== 10) {
+                document.getElementById('PhoneNumber').classList.add('is-invalid');
+                isValid = false;
+            } else {
+                document.getElementById('PhoneNumber').classList.remove('is-invalid');
+            }
+            
+            if (!isValid) {
+                showNotification('Пожалуйста, заполните все обязательные поля корректно', 'error');
+                return;
+            }
+
+            // Форматируем телефон перед отправкой
+            const formattedPhone = '+7' + phoneNumber.replace(/\D/g, '');
+
+            // Показываем индикатор загрузки на кнопке
+            const submitButton = document.querySelector('button[onclick="placeOrder()"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Обработка...';
+
+            fetch('/Order/PlaceOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    deliveryAddress: deliveryAddress,
+                    phoneNumber: formattedPhone
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Очищаем корзину в интерфейсе
+                    updateCartCount();
+                    
+                    // Создаем затемненный фон
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.5);
+                        z-index: 999;
+                    `;
+                    document.body.appendChild(overlay);
+                    
+                    // Показываем модальное окно успеха
+                    const successModal = document.querySelector('.success-modal');
+                    successModal.style.display = 'block';
+                    
+                    // Добавляем класс для анимации
+                    setTimeout(() => {
+                        successModal.classList.add('show');
+                    }, 10);
+
+                    // Автоматически перенаправляем через 3 секунды
+                    setTimeout(() => {
+                        window.location.href = '/Order/History';
+                    }, 3000);
+                } else {
+                    Swal.fire({
+                        title: 'Ошибка',
+                        text: data.message || 'Произошла ошибка при оформлении заказа',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Ошибка',
+                    text: 'Произошла ошибка при оформлении заказа',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
+            })
+            .finally(() => {
+                // Восстанавливаем кнопку
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
+        }
+    </script>
+} 

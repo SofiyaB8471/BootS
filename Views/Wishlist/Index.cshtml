@@ -1,0 +1,143 @@
+@model IEnumerable<BootS.Models.Wishlist>
+
+@{
+    ViewData["Title"] = "Список желаемого";
+}
+
+<div class="container mt-4">
+    <h1>Список желаемого</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Ваш список желаемого пуст
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="@item.Product.ImageUrl" class="card-img-top" alt="@item.Product.Name">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Product.Name</h5>
+                            <p class="card-text">@item.Product.Description</p>
+                            <p class="card-text"><strong>Цена: @item.Product.Price.ToString("C")</strong></p>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-primary" onclick="addToCart(@item.ProductId)">В корзину</button>
+                                <button class="btn-icon" onclick="removeFromWishlist(@item.ProductId)">
+                                    <i class="bi bi-trash text-danger"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function showNotification(message, icon = 'success') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: icon,
+                title: message
+            });
+        }
+
+        function removeFromWishlist(productId) {
+            Swal.fire({
+                title: 'Удаление товара',
+                text: 'Вы уверены, что хотите удалить этот товар из списка желаемого?',
+                icon: 'question',
+                iconColor: '#dc3545',
+                showCancelButton: true,
+                confirmButtonText: 'Удалить',
+                cancelButtonText: 'Отмена',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: true,
+                reverseButtons: true,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/Wishlist/RemoveFromWishlist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(productId)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Сначала удаляем элемент из DOM
+                            const productCard = document.querySelector(`[onclick="removeFromWishlist(${productId})"]`).closest('.col');
+                            productCard.remove();
+                            
+                            // Проверяем, остались ли еще товары
+                            const remainingProducts = document.querySelectorAll('.col');
+                            if (remainingProducts.length === 0) {
+                                // Если товаров не осталось, показываем сообщение
+                                const container = document.querySelector('.row');
+                                container.innerHTML = '<div class="alert alert-info w-100">Ваш список желаемого пуст</div>';
+                            }
+                            
+                            // Затем показываем уведомление
+                            showNotification('Товар успешно удален из списка желаемого');
+                        } else {
+                            showNotification('Не удалось удалить товар', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Произошла ошибка при удалении товара', 'error');
+                    });
+                }
+            });
+        }
+
+        function addToCart(productId) {
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ productId: productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Товар добавлен в корзину');
+                    updateCartCount();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Не удалось добавить товар в корзину', 'error');
+            });
+        }
+    </script>
+} 

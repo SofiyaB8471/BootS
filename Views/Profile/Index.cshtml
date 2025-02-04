@@ -1,0 +1,152 @@
+@model BootS.Models.User
+
+@{
+    ViewData["Title"] = "Профиль пользователя";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h1 class="h3 mb-0 text-gray-800">Профиль пользователя</h1>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="profile-info mb-4">
+                        <div class="info-group mb-3">
+                            <label class="text-muted mb-1">Имя пользователя</label>
+                            <h5 class="mb-0">@Model.Username</h5>
+                        </div>
+                        <div class="info-group mb-3">
+                            <label class="text-muted mb-1">Email</label>
+                            <h5 class="mb-0">@Model.Email</h5>
+                        </div>
+                        <div class="info-group mb-3">
+                            <label class="text-muted mb-1">Роль</label>
+                            <h5 class="mb-0">@Model.Role</h5>
+                        </div>
+                        <div class="info-group">
+                            <label class="text-muted mb-1">Баланс</label>
+                            <h5 class="mb-0 d-flex align-items-center">
+                                <i class="bi bi-wallet2 me-2 text-success"></i>
+                                <span id="userBalance">@Model.Balance.ToString("C")</span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex flex-column gap-3">
+                        <button onclick="location.href='/Balance'" class="btn btn-primary d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Пополнить баланс</span>
+                        </button>
+                        <button onclick="location.href='/Account/ChangePassword'" class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-key"></i>
+                            <span>Сменить пароль</span>
+                        </button>
+                        <button onclick="location.href='/Order/History'" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-clock-history"></i>
+                            <span>История заказов</span>
+                        </button>
+                        <button onclick="logout()" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Выйти</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,.1);
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .profile-info {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .info-group label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .info-group h5 {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn i {
+        font-size: 1.1rem;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #0d6efd;
+        color: #0d6efd;
+        background-color: transparent;
+        padding: 0.7rem 1.5rem;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff !important;
+    }
+
+    .btn-outline-primary i {
+        color: #0d6efd;
+        transition: color 0.3s ease;
+    }
+
+    .btn-outline-primary:hover i,
+    .btn-outline-primary:hover span {
+        color: #fff !important;
+    }
+
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+</style> 

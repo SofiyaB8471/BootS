@@ -1,0 +1,130 @@
+@model IEnumerable<string>
+
+@{
+    ViewData["Title"] = "Категории товаров";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Категории товаров</h2>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col">
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="bi bi-lightning-fill"></i>
+                </div>
+                <h3>Adidas</h3>
+                <p>Спортивная обувь от известного бренда</p>
+                <a href="@Url.Action("Products", "Category", new { category = "Adidas" })" class="btn btn-primary">
+                    Перейти к товарам
+                </a>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <h3>New Balance</h3>
+                <p>Стильная и комфортная обувь</p>
+                <a href="@Url.Action("Products", "Category", new { category = "New Balance" })" class="btn btn-primary">
+                    Перейти к товарам
+                </a>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <h3>Nike</h3>
+                <p>Инновационная спортивная обувь</p>
+                <a href="@Url.Action("Products", "Category", new { category = "Nike" })" class="btn btn-primary">
+                    Перейти к товарам
+                </a>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="bi bi-award"></i>
+                </div>
+                <h3>Puma</h3>
+                <p>Качественная спортивная обувь</p>
+                <a href="@Url.Action("Products", "Category", new { category = "Puma" })" class="btn btn-primary">
+                    Перейти к товарам
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.category-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.category-icon {
+    width: 64px;
+    height: 64px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.category-icon i {
+    font-size: 2rem;
+    color: #0d6efd;
+}
+
+.category-card h3 {
+    font-size: 1.5rem;
+    color: #212529;
+    margin: 0;
+}
+
+.category-card p {
+    color: #6c757d;
+    margin: 0.5rem 0 1.5rem;
+}
+
+.category-card .btn {
+    margin-top: auto;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.category-card .btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Уникальные цвета для каждой категории */
+.category-card:nth-child(1) .category-icon i { color: #ff6b6b; }
+.category-card:nth-child(2) .category-icon i { color: #4dabf7; }
+.category-card:nth-child(3) .category-icon i { color: #51cf66; }
+.category-card:nth-child(4) .category-icon i { color: #ffd43b; }
+</style> 
